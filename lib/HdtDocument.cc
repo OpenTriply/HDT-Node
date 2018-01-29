@@ -8,11 +8,15 @@
 #include <HDTVocabulary.hpp>
 #include <LiteralDictionary.hpp>
 #include "HdtDocument.h"
+#include <chrono>
 
 using namespace v8;
 using namespace hdt;
 
+// Used to store the total time elapsed for all iterations.
+static chrono::duration <double, nano>  total(0);
 
+static long i = 0;
 
 /******** Construction and destruction ********/
 
@@ -128,6 +132,10 @@ public:
   };
 
   void Execute() {
+
+    // Start timer
+    auto start = chrono::steady_clock::now();
+
     IteratorTripleID* it = NULL;
     try {
       // Prepare the triple pattern
@@ -176,6 +184,14 @@ public:
     catch (const runtime_error error) { SetErrorMessage(error.what()); }
     if (it)
       delete it;
+
+    // End timer
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+    total += diff;
+    i += 1;
+    if(i == 500000)
+      cout << "C++ execution time: " << chrono::duration <double, milli> (total).count() << " ms" << endl;
   }
 
   void HandleOKCallback() {
